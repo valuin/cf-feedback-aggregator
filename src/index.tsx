@@ -70,7 +70,15 @@ const Dashboard: FC<{ feedback: FeedbackEntry[] }> = ({ feedback }) => {
         </div>
 
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-gray-800">Urgent + Negative Priority Queue</h2>
+          <div class="flex items-center gap-3">
+            <h2 class="text-xl font-bold text-gray-800">Urgent + Negative Priority Queue</h2>
+            {urgentCount > 0 && (
+              <span class="flex h-3 w-3 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+            )}
+          </div>
           <span class="text-xs text-gray-400">
             Filtered by Sentiment: Negative AND Urgency: High/Critical
           </span>
