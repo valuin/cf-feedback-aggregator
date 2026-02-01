@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cloudflare": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://docs.mcp.cloudflare.com/mcp"],
+      "alwaysAllow": ["search_cloudflare_documentation"]
+    }
+  }
+}
