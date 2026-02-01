@@ -23,11 +23,14 @@ export class AnalyzeWorkflow extends WorkflowEntrypoint<CloudflareBindings, Feed
             content: `Analyze this feedback: "${feedback.rawText}"`,
           },
         ],
-        // Use JSON mode if supported or handle parsing
-        response_format: { type: "json_object" },
       })) as { response: string };
 
-      return JSON.parse(response.response) as AIAnalysisResult;
+      // Ensure we extract JSON if the model returns it wrapped in markdown or with extra text
+      const match = response.response.match(/\{[\s\S]*\}/);
+      if (!match) {
+        throw new Error(`AI returned invalid response: ${response.response}`);
+      }
+      return JSON.parse(match[0]) as AIAnalysisResult;
     });
 
     // Step 2: Persist to D1

@@ -20,6 +20,7 @@
       "binding": "DB",
       "database_name": "feedback-db",
       "database_id": "500bc753-0624-41a9-b490-837f998aa368",
+      "migrations_dir": "drizzle",
     },
   ],
   "ai": {
