@@ -7,8 +7,9 @@ mock.module("cloudflare:workers", () => ({
   WorkflowStep: class {},
 }));
 
-describe("Hono App Routes", () => {
+describe("Smoke Test: App Routes", () => {
   it("POST /feedback should be defined and return 200", async () => {
+    // Import app using the correct path from the root
     const { default: app } = await import("./src/index");
 
     // Mock environment for testing

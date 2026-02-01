@@ -16,78 +16,158 @@ const Layout: FC = (props) => (
   </html>
 );
 
-const Dashboard: FC<{ feedback: FeedbackEntry[] }> = ({ feedback }) => (
-  <Layout>
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Urgent + Negative Feedback</h1>
-        <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-medium">
-          {feedback.length} Signals
+const Dashboard: FC<{ feedback: FeedbackEntry[] }> = ({ feedback }) => {
+  const urgentCount = feedback.filter(
+    (f) => f.urgency === "critical" || f.urgency === "high",
+  ).length;
+  const topCategories = Object.entries(
+    feedback.reduce(
+      (acc, f) => {
+        if (f.category) acc[f.category] = (acc[f.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    ),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  return (
+    <Layout>
+      <div class="max-w-6xl mx-auto">
+        <header class="mb-12">
+          <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+            Feedback Signal Aggregator
+          </h1>
+          <p class="text-lg text-gray-600">
+            Extracting actionable product signals from fragmented channels.
+          </p>
+        </header>
+
+        {/* Priority Insights Cards */}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="text-sm font-medium text-gray-500 uppercase mb-1">Total Signals</div>
+            <div class="text-3xl font-bold text-blue-600">{feedback.length}</div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="text-sm font-medium text-gray-500 uppercase mb-1">Urgent/Critical</div>
+            <div class="text-3xl font-bold text-red-600">{urgentCount}</div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="text-sm font-medium text-gray-500 uppercase mb-1">Top Themes</div>
+            <div class="flex gap-2 mt-2">
+              {topCategories.map(([cat]) => (
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-medium">
+                  {cat}
+                </span>
+              ))}
+              {topCategories.length === 0 && (
+                <span class="text-xs text-gray-400 italic">None yet</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-gray-800">Urgent + Negative Priority Queue</h2>
+          <span class="text-xs text-gray-400">
+            Filtered by Sentiment: Negative AND Urgency: High/Critical
+          </span>
+        </div>
+
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Origin
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Raw Signal
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Urgency
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Classification
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+              {feedback.length === 0 ? (
+                <tr>
+                  <td colspan={4} class="px-6 py-12 text-center text-gray-500 italic">
+                    No urgent negative signals found. The system is quiet.
+                  </td>
+                </tr>
+              ) : (
+                feedback.map((f) => (
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-md bg-slate-100 text-slate-700 uppercase">
+                        {f.source}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 leading-relaxed max-w-md">
+                      {f.rawText}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-md ${
+                          f.urgency === "critical"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-orange-100 text-orange-700"
+                        }`}
+                      >
+                        {f.urgency}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-xs font-medium text-gray-900">
+                        {f.category || "Uncategorized"}
+                      </div>
+                      <div class="text-[10px] text-gray-400 uppercase">{f.sentiment}</div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div class="bg-white shadow rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Source
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Feedback
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Urgency
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {feedback.map((f) => (
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                    {f.source}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-sm text-gray-500">{f.rawText}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      f.urgency === "critical"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {f.urgency}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{f.category}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </Layout>
-);
+    </Layout>
+  );
+};
 
 app.get("/", async (c) => {
   const db = drizzle(c.env.DB);
-  const results = await db.select().from(feedbackEntries).all();
-  // Filter for urgent/negative in the query or here for prototype
+  let results: (typeof feedbackEntries.$inferSelect)[] = [];
+  try {
+    results = await db.select().from(feedbackEntries).all();
+  } catch (e) {
+    console.error(`[D1 Error]`, e);
+  }
+
+  // Debug: Log results to terminal
+  console.log(`[D1 Query] Raw entries found:`, JSON.stringify(results, null, 2));
+
+  // Filter for signals
   const signals: FeedbackEntry[] = results
-    .filter((r) => (r.urgency === "high" || r.urgency === "critical") && r.sentiment === "negative")
     .map((r) => ({
-      ...r,
+      id: r.id,
       source: r.source as FeedbackSource,
-      sentiment: r.sentiment as FeedbackEntry["sentiment"],
-      urgency: r.urgency as FeedbackEntry["urgency"],
+      rawText: r.rawText,
+      sentiment: (r.sentiment?.toLowerCase() || "") as FeedbackEntry["sentiment"],
+      urgency: (r.urgency?.toLowerCase() || "") as FeedbackEntry["urgency"],
       category: r.category ?? undefined,
-      createdAt: r.createdAt ?? undefined,
-    }));
+      createdAt: r.createdAt || undefined,
+    }))
+    .filter(
+      (r) => (r.urgency === "high" || r.urgency === "critical") && r.sentiment === "negative",
+    );
+
+  console.log(`[D1 Query] Signals found after filtering:`, JSON.stringify(signals, null, 2));
 
   return c.html(<Dashboard feedback={signals} />);
 });
